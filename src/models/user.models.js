@@ -27,11 +27,11 @@ const userSchema = new Schema(
             trim: true,
             index: true
         },
-        email: {
+        avatar: {
             type: String, //cloudinary url
             required: true,
         },
-        email: {
+        coverImage: {
             type: String,
         },
         watchHistory: [
