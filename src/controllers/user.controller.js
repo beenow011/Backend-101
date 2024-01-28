@@ -221,7 +221,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 
 const updateAvatar = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.file?.path
-
+    const publicId = req.user?.avatar.split('/').pop().replace(/\.[^/.]+$/, '');
 
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar file is missing")
@@ -244,7 +244,8 @@ const updateAvatar = asyncHandler(async (req, res) => {
     if (!user) {
         throw new ApiError(500, "Error while modifying the avatar")
     }
-    await deleteFileFromCloudinary(oldAvatarUrl)
+    const dltResponse = await deleteFileFromCloudinary(publicId)
+    console.log(dltResponse)
     return res.status(200).json(new ApiResponse(200, user, "Avatar updated"))
 })
 
