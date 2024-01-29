@@ -245,13 +245,13 @@ const updateAvatar = asyncHandler(async (req, res) => {
         throw new ApiError(500, "Error while modifying the avatar")
     }
     const dltResponse = await deleteFileFromCloudinary(publicId)
-    console.log(dltResponse)
+    // console.log(dltResponse)
     return res.status(200).json(new ApiResponse(200, user, "Avatar updated"))
 })
 
 const updateCoverImage = asyncHandler(async (req, res) => {
     const coverImageLocalPath = req.file?.path
-
+    const publicId = req.user?.coverImage.split('/').pop().replace(/\.[^/.]+$/, '');
     if (!coverImageLocalPath) {
         throw new ApiError(400, "coverImage file is missing")
     }
@@ -268,7 +268,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
         }, {
         new: true
     }).select("-password")
-
+    const dltResponse = await deleteFileFromCloudinary(publicId)
     return res.status(200).json(new ApiResponse(200, user, "cover image updated"))
 })
 
