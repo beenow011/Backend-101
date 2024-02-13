@@ -16,7 +16,7 @@ router.route("/publish").post(verifyJWT, upload.fields(
         }
     ]), publishAVideo)
 router.route("/fetchVideo/:videoId").get(verifyJWT, getVideoById)
-router.route("/delete/:videoId").post(verifyJWT, deleteVideo)
+router.route("/delete/:videoId").delete(verifyJWT, deleteVideo)
 router.route("/getAllVideos").get(verifyJWT, getAllVideos)
 router.route("/togglePublish/:videoId").patch(verifyJWT, togglePublishStatus)
 router.route("/updateVideo/:videoId").patch(verifyJWT, upload.single(
