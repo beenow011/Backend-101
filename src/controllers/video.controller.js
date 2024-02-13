@@ -73,13 +73,48 @@ const deleteVideo = asyncHandler(async (req, res) => {
 })
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
-    //TODO: get all videos based on query, sort, pagination
+    //    const {page} = req.query
+    const allVideos = await Video.find({ isPublished: true })
+    if (!allVideos) {
+        throw new ApiError(401, "Could not get the videos from database.")
+    }
+    return res.status(200).json(new ApiResponse(200, allVideos, "All videos successfully fetched"))
+
+
 
 })
 
 const updateVideo = asyncHandler(async (req, res) => {
     const { videoId } = req.params
+    const { title, description } = req.body;
+
+    const thumbnail = req.files?.thumbnail[0]?.path;
+    const oldVideoFile = await Video.findById(videoId)
+    const publicId = oldVideoFile.thumbnail.split('/').pop().replace(/\.[^/.]+$/, '');
+    console.log(req.body)
+    if (req.user._id.equals(oldVideoFile.owner)) {
+        // They are equal
+        const thumbnailCloudinary = await uploadCloudinary(thumbnail)
+
+        const newVideoFile = await Video.findByIdAndUpdate(
+            videoId,
+            {
+                $set: {
+                    title: title, description: description,
+                    thumbnail: thumbnailCloudinary?.url
+                }
+            })
+        if (!newVideoFile) {
+            throw new ApiError(500, "Failed to update the details")
+        }
+        const response = await deleteFileFromCloudinary(publicId)
+        console.log(response)
+        return res.status(200).json(new ApiResponse(200, newVideoFile, "Account updated successfully"))
+    } else {
+        // They are not equal
+        throw new ApiError(400, "Only owner can update the video")
+    }
+
     //TODO: update video details like title, description, thumbnail
 
 })
@@ -88,6 +123,27 @@ const updateVideo = asyncHandler(async (req, res) => {
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
     const { videoId } = req.params
+    const oldVideoFile = await Video.findById(videoId)
+    if (req.user._id.equals(oldVideoFile.owner)) {
+
+
+        const newVideoFile = await Video.findByIdAndUpdate(
+            videoId,
+            {
+                $set: {
+                    isPublished: !oldVideoFile?.isPublished
+                }
+            })
+        if (!newVideoFile) {
+            throw new ApiError(500, "Failed to update the details")
+        }
+
+        return res.status(200).json(new ApiResponse(200, newVideoFile, "Toggled successfully"))
+    } else {
+        // They are not equal
+        throw new ApiError(400, "Only owner can update the video")
+    }
+
 })
 
 export {
